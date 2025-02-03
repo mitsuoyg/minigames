@@ -250,8 +250,8 @@ export default function TicTacToe() {
             <p className="text-gray-300">
               The Minimax algorithm is a recursive algorithm used for
               decision-making in zero-sum games. It evaluates all possible moves
-              to find the optimal play by maximizing the player's advantage
-              while minimizing the opponent's. The algorithm uses depth to
+              to find the optimal play by maximizing the player&apos;s advantage
+              while minimizing the opponent&apos;s. The algorithm uses depth to
               prefer faster wins and slower losses.
             </p>
           </div>
@@ -327,14 +327,14 @@ export default function TicTacToe() {
                 playerState.currentPlayer === 'O' ? (
                   <span className="text-green-400">Your turn (○)</span>
                 ) : (
-                  <span className="text-red-400">AI's turn (×)</span>
+                  <span className="text-red-400">AI&apos;s turn (×)</span>
                 )
               ) : gameStatus === 'won' ? (
                 <span className="text-green-400">You won (○)!</span>
               ) : gameStatus === 'lost' ? (
                 <span className="text-red-400">AI won (×)!</span>
               ) : (
-                <span className="text-blue-400">It's a draw!</span>
+                <span className="text-blue-400">It&apos;s a draw!</span>
               )}
             </p>
           </div>
