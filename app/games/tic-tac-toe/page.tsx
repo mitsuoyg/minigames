@@ -218,9 +218,14 @@ export default function TicTacToe() {
     setGameStatus('playing');
   };
 
+  const restartAll = () => {
+    restartGame();
+    setScores({ wins: 0, losses: 0, draws: 0 });
+  };
+
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
-      if (e.key.toLowerCase() === 'r') restartGame();
+      if (e.key.toLowerCase() === 'r') restartAll();
     };
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
@@ -272,7 +277,7 @@ export default function TicTacToe() {
             </select>
           </div>
           <button
-            onClick={restartGame}
+            onClick={restartAll}
             className="flex items-center gap-2 bg-gray-800 hover:bg-gray-700 px-4 py-2 rounded-lg"
           >
             <FaRedoAlt /> Restart (R)
