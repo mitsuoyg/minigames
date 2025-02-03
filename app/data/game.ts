@@ -21,9 +21,9 @@ export const games: Game[] = [
     id: 2,
     name: 'AI Tic Tac Toe',
     description:
-      'Classic strategy game featuring an unbeatable Minimax algorithm opponent. Perfect your game theory skills.',
+      'Classic strategy game featuring an unbeatable Minimax algorithm opponent.',
     path: '/games/tic-tac-toe',
-    image: '/games/tic-tac-toe.jpg',
+    image: '/games/tic-tac-toe.PNG',
     theme: 'bg-rose-500/20',
   },
   {

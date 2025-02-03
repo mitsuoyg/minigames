@@ -3,15 +3,15 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { FaPlay, FaPause, FaRedoAlt, FaInfoCircle } from 'react-icons/fa';
 import { useInterval } from 'react-use';
 
-const GRID_SIZE = { x: 50, y: 30 };
+const GRID_SIZE = { x: 100, y: 100 };
 const CELL_SIZE = 20;
 const INITIAL_PATTERN = [
-  [24, 15],
-  [25, 14],
-  [25, 16],
-  [26, 14],
-  [26, 16],
-  [27, 15],
+  [GRID_SIZE.x / 2 - 1, GRID_SIZE.x / 2],
+  [GRID_SIZE.x / 2, GRID_SIZE.x / 2 - 1],
+  [GRID_SIZE.x / 2, GRID_SIZE.x / 2 + 2],
+  [GRID_SIZE.x / 2 + 1, GRID_SIZE.x / 2 - 1],
+  [GRID_SIZE.x / 2 + 1, GRID_SIZE.x / 2 + 2],
+  [GRID_SIZE.x / 2 + 2, GRID_SIZE.x / 2],
 ];
 
 export default function GameOfLife() {
