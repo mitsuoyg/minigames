@@ -12,9 +12,9 @@ export const games: Game[] = [
     id: 1,
     name: 'Game of Life',
     description:
-      "Interactive cellular automation simulator based on Conway's rules. Watch complex patterns emerge from simple initial states.",
+      "Interactive cellular automation simulator based on Conway's rules",
     path: '/games/game-of-life',
-    image: '/games/life.jpg',
+    image: '/games/life.PNG',
     theme: 'bg-indigo-500/20',
   },
   {
@@ -39,9 +39,9 @@ export const games: Game[] = [
     id: 4,
     name: 'Snake',
     description:
-      'Modern reinvention of the classic arcade experience with smooth controls and progressive difficulty scaling.',
+      'Classic arcade experience with progressive difficulty scaling.',
     path: '/games/snake',
-    image: '/games/snake.jpg',
+    image: '/games/snake.PNG',
     theme: 'bg-amber-500/20',
   },
 ];
