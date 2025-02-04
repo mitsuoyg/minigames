@@ -2,6 +2,14 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useInterval } from 'react-use';
+// import {
+//   FaCrosshairs,
+//   FaShieldAlt,
+//   FaHourglassStart,
+//   FaExchangeAlt,
+//   FaBullseye,
+//   FaCube,
+// } from 'react-icons/fa';
 import useGameSounds from '@/app/_hooks/useGameSounds';
 import Vector from './_components/Vector';
 import Camera from './_components/Camera';
@@ -10,15 +18,16 @@ import Physics from './_components/modules/Physics';
 import Collision from './_components/modules/Collision';
 
 const FIELD_WIDTH = 1000;
-const GOAL_WIDTH = 50;
+const GOAL_WIDTH = 24;
 const GOAL_ASPECT = 0.3;
 const FIELD_HEIGHT = 600;
-const PLAYER_SIZE = 20;
-const ITEM_WEIGHT = 10;
-const BALL_SIZE = 10;
+const PLAYER_SIZE = 16;
+const ITEM_WEIGHT = 12;
+const BALL_SIZE = 8;
 const WALL_COLOR = '#333';
 const PLAYER_SPEED = 3;
-const BALL_SPEED = 6;
+const BALL_SPEED = 3;
+const BALL_SPEED_MAX = 10;
 
 export default function GamePage() {
   const { playSound } = useGameSounds();
@@ -29,6 +38,7 @@ export default function GamePage() {
   const camera = useRef(
     new Camera(Vector.zero(), new Vector(FIELD_WIDTH, FIELD_HEIGHT))
   );
+
   const player = useRef<Entity>(
     (() => {
       const entity = new Entity(
@@ -38,6 +48,7 @@ export default function GamePage() {
         [new Physics()],
         'blue'
       );
+      entity.team = 'blue';
       entity.beforeUpdate = (entity, _) => {
         const velocity = new Vector(
           (keys.current['d'] ? 1 : 0) - (keys.current['a'] ? 1 : 0),
@@ -59,26 +70,31 @@ export default function GamePage() {
       [new Physics()],
       team
     );
+    entity.team = team;
     entity.beforeUpdate = (entity) => {
-      if (!entity.timeCount || entity.timeCount > 300) {
+      if (
+        !entity.timeCount ||
+        !entity.timeLimit ||
+        entity.timeCount > entity.timeLimit
+      ) {
         const strategies = [
           'attacking',
-          'attacking',
-          'attacking',
-          'defending',
+          'intercepting',
           'defending',
           'goalkeeper',
+          'covering',
         ];
         entity.strategy =
           strategies[Math.floor(Math.random() * strategies.length)];
-        console.log(entity.strategy);
-        entity.timeCount = 0;
+        entity.timeCount = 1;
+        entity.timeLimit = 200 + Math.floor(Math.random() * 200);
       }
       entity.timeCount += 1;
 
-      let strategy = entity.strategy || 'attacking';
       let target = Vector.zero();
-      let myGoal = team === 'red' ? redGoal.current : blueGoal.current;
+      const strategy = entity.strategy || 'attacking';
+      const myGoal = team === 'red' ? redGoal.current : blueGoal.current;
+      const opponentTeam = team === 'red' ? 'blue' : 'red';
 
       if (strategy === 'attacking') {
         target = new Vector(ball.current.position.x, ball.current.position.y);
@@ -96,6 +112,21 @@ export default function GamePage() {
           targetX,
           Math.max(Math.min(ball.current.position.y, 150), -150)
         );
+      } else if (strategy === 'covering') {
+        const nearestOpponent = entities.current
+          .filter((e) => e.team === opponentTeam)
+          .sort(
+            (a, b) =>
+              Vector.distance(entity.position, a.position) -
+              Vector.distance(entity.position, b.position)
+          )[0];
+        target = nearestOpponent?.position || myGoal.position;
+      } else if (strategy === 'intercepting') {
+        const ballPrediction = Vector.add(
+          ball.current.position,
+          Vector.multiply(ball.current.velocity, 30)
+        );
+        target = ballPrediction;
       }
       const directionVector = Vector.subtract(target, entity.position);
       const direction = Vector.normalize(directionVector);
@@ -111,6 +142,7 @@ export default function GamePage() {
         new Vector(originX, 20),
         new Vector(originX, -20),
         new Vector(originX - 20, 0),
+        new Vector(originX + 20, 0),
       ];
       const entities = positions.map((position) =>
         AIPlayerFactory('red', position)
@@ -124,6 +156,7 @@ export default function GamePage() {
       const positions = [
         new Vector(originX, 20),
         new Vector(originX, -20),
+        new Vector(originX - 20, 0),
         new Vector(originX + 20, 0),
       ];
       const entities = positions.map((position) =>
@@ -133,53 +166,66 @@ export default function GamePage() {
     })()
   );
 
-  const redPlayer_ = useRef<Entity>(
-    (() => {
-      const entity = new Entity(
-        'redPlayer',
-        new Vector(FIELD_WIDTH / 4, 0),
-        new Vector(PLAYER_SIZE, PLAYER_SIZE),
-        [new Physics()],
-        'red'
-      );
-      entity.beforeUpdate = (entity, _) => {
-        const velocity = new Vector(
-          (keys.current['ArrowRight'] ? 1 : 0) -
-            (keys.current['ArrowLeft'] ? 1 : 0),
-          (keys.current['ArrowDown'] ? 1 : 0) -
-            (keys.current['ArrowUp'] ? 1 : 0)
-        );
-        entity.velocity = Vector.multiply(
-          Vector.normalize(velocity),
-          PLAYER_SPEED
-        );
-      };
-      entity.listeners.collision = (other_entity: Entity) => {
-        console.log(other_entity.tag);
-      };
-      return entity;
-    })()
-  );
+  // const redPlayer_ = useRef<Entity>(
+  //   (() => {
+  //     const entity = new Entity(
+  //       'redPlayer',
+  //       new Vector(FIELD_WIDTH / 4, 0),
+  //       new Vector(PLAYER_SIZE, PLAYER_SIZE),
+  //       [new Physics()],
+  //       'red'
+  //     );
+  //     entity.beforeUpdate = (entity, _) => {
+  //       const velocity = new Vector(
+  //         (keys.current['ArrowRight'] ? 1 : 0) -
+  //           (keys.current['ArrowLeft'] ? 1 : 0),
+  //         (keys.current['ArrowDown'] ? 1 : 0) -
+  //           (keys.current['ArrowUp'] ? 1 : 0)
+  //       );
+  //       entity.velocity = Vector.multiply(
+  //         Vector.normalize(velocity),
+  //         PLAYER_SPEED
+  //       );
+  //     };
+  //     return entity;
+  //   })()
+  // );
 
   const ball = useRef<Entity>(
     (() => {
       const entity = new Entity(
         'ball',
-        new Vector(50, 0),
+        new Vector(0, 0),
         new Vector(BALL_SIZE, BALL_SIZE),
         [new Physics('bounce')],
         '#fff'
       );
-      entity.velocity = new Vector(BALL_SPEED, BALL_SPEED);
+      entity.interval = 0;
+      entity.beforeUpdate = (entity, _) => {
+        entity.interval += 1;
+        if (entity.interval >= 100) {
+          if (Math.abs(entity.velocity.x) < BALL_SPEED_MAX) {
+            entity.velocity = Vector.multiply(entity.velocity, 1.02);
+          }
+          entity.interval = 0;
+        }
+      };
       return entity;
     })()
   );
+
+  useEffect(() => {
+    if (ball.current) {
+      resetGame();
+    }
+  }, [ball]);
+
   const blueGoal = useRef<Entity>(
     (() => {
       const entity = new Entity(
         'wall',
-        new Vector(-FIELD_WIDTH / 2 - GOAL_WIDTH, 0),
-        new Vector(ITEM_WEIGHT, FIELD_HEIGHT * GOAL_ASPECT + ITEM_WEIGHT),
+        new Vector(-FIELD_WIDTH / 2 - 20, 0),
+        new Vector(GOAL_WIDTH, FIELD_HEIGHT * GOAL_ASPECT + ITEM_WEIGHT),
         [new Collision()],
         'blue'
       );
@@ -197,8 +243,8 @@ export default function GamePage() {
     (() => {
       const entity = new Entity(
         'wall',
-        new Vector(FIELD_WIDTH / 2 + GOAL_WIDTH, 0),
-        new Vector(ITEM_WEIGHT, FIELD_HEIGHT * GOAL_ASPECT + ITEM_WEIGHT),
+        new Vector(FIELD_WIDTH / 2 + 20, 0),
+        new Vector(GOAL_WIDTH, FIELD_HEIGHT * GOAL_ASPECT + ITEM_WEIGHT),
         [new Collision()],
         'red'
       );
@@ -234,6 +280,7 @@ export default function GamePage() {
       [new Physics('static')],
       WALL_COLOR
     ),
+    // Left
     new Entity(
       'wall',
       new Vector(
@@ -247,7 +294,6 @@ export default function GamePage() {
       [new Physics('static')],
       WALL_COLOR
     ),
-    // Left
     new Entity(
       'wall',
       new Vector(
@@ -334,9 +380,11 @@ export default function GamePage() {
   const playGoal = () => playSound(1046.5, 0.4);
 
   const resetGame = () => {
-    player.current.position = new Vector(-FIELD_WIDTH / 4, 0);
-    ball.current.position = new Vector(50, 0);
-    ball.current.velocity = new Vector(BALL_SPEED, BALL_SPEED);
+    ball.current.position = new Vector(0, 0);
+    ball.current.velocity = new Vector(
+      (Math.random() > 0.5 ? 1 : -1) * BALL_SPEED,
+      (Math.random() > 0.5 ? 1 : -1) * BALL_SPEED
+    );
   };
 
   const resetAll = () => {
@@ -408,25 +456,27 @@ export default function GamePage() {
 
   return (
     <div className="relative bg-gray-900 min-h-screen flex items-center justify-center">
-      {/* UI elements remain the same */}
-      <div className="absolute top-4 left-4 text-white flex gap-4">
+      <div className="absolute top-4 left-4 text-white flex gap-4 bg-gray-800/50 p-4 rounded-lg">
         <button
           onClick={() => setIsPaused(!isPaused)}
-          className="bg-gray-800 px-4 py-2 rounded hover:bg-gray-700"
+          className="bg-emerald-600 px-4 py-2 rounded hover:bg-emerald-700 transition-all"
         >
-          {isPaused ? 'Resume (P)' : 'Pause (P)'}
+          {isPaused ? '▶ Resume' : '⏸ Pause'}
         </button>
         <button
-          onClick={() => resetAll()}
-          className="bg-gray-800 px-4 py-2 rounded hover:bg-gray-700"
+          onClick={resetAll}
+          className="bg-rose-600 px-4 py-2 rounded hover:bg-rose-700 transition-all"
         >
-          Restart (R)
+          ↻ Restart
         </button>
       </div>
 
-      <div className="absolute top-4 right-4 text-2xl text-white">
-        <div className="text-blue-400">Blue: {scores.blue}</div>
-        <div className="text-red-400">Red: {scores.red}</div>
+      <div className="absolute top-4 right-4 text-2xl text-white bg-gray-800/50 p-4 rounded-lg">
+        <div className="flex items-center gap-4">
+          <div className="text-blue-400 font-bold">{scores.blue}</div>
+          <div className="text-gray-300">-</div>
+          <div className="text-red-400 font-bold">{scores.red}</div>
+        </div>
       </div>
 
       <canvas
