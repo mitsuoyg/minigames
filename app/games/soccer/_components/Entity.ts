@@ -1,14 +1,23 @@
+import Collision from './modules/Collision';
+import Physics from './modules/Physics';
 import Vector from './Vector';
 
 class Entity {
   tag: string;
   position: Vector;
   size: Vector;
-  components: any[];
+  components: (Physics | Collision)[];
   color: string;
   velocity: Vector;
   listeners: { [key: string]: Function };
-  [key: string]: any;
+  [key: string]:
+    | undefined
+    | number
+    | string
+    | Vector
+    | Function
+    | (Physics | Collision)[]
+    | { [key: string]: Function };
 
   constructor(
     tag: string,
@@ -41,17 +50,17 @@ class Entity {
   }
 
   static distance(entity1: Entity, entity2: Entity): Vector {
-    let vectorA = Vector.subtract(
+    const vectorA = Vector.subtract(
       Vector.add(entity1.position, Vector.divide(entity1.size, 2)),
       Vector.subtract(entity2.position, Vector.divide(entity2.size, 2))
     );
-    let vectorB = Vector.subtract(
+    const vectorB = Vector.subtract(
       Vector.subtract(entity1.position, Vector.divide(entity1.size, 2)),
       Vector.add(entity2.position, Vector.divide(entity2.size, 2))
     );
-    let distanceX =
+    const distanceX =
       Math.abs(vectorA.x) < Math.abs(vectorB.x) ? vectorA.x : vectorB.x;
-    let distanceY =
+    const distanceY =
       Math.abs(vectorA.y) < Math.abs(vectorB.y) ? vectorA.y : vectorB.y;
     return new Vector(distanceX, distanceY);
   }
@@ -70,9 +79,8 @@ class Entity {
     });
     this.position.add(this.velocity);
   }
-
-  update(entity: Entity, entities: Entity[]) {}
-  beforeUpdate(entity: Entity, entities: Entity[]) {}
+  update(_entity: Entity, _entities: Entity[]) {}
+  beforeUpdate(_entity: Entity, _entities: Entity[]) {}
 }
 
 export default Entity;

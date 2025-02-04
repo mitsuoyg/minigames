@@ -64,6 +64,8 @@ class Physics {
       });
     }
   }
+
+  beforeUpdate(_entity: Entity, _entities: Entity[]) {}
 }
 
 export default Physics;

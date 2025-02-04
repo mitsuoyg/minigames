@@ -12,7 +12,7 @@ class Collision {
         entity !== other_entity &&
         Collision.isColliding(entity, other_entity)
       ) {
-        let collisionListener = entity.listeners.collision;
+        const collisionListener = entity.listeners.collision;
         if (collisionListener) collisionListener(other_entity);
       }
     });
@@ -32,7 +32,7 @@ class Collision {
     entity2: Entity,
     velocity1: Vector
   ): boolean {
-    let new_entity1_position = Vector.add(entity1.position, velocity1);
+    const new_entity1_position = Vector.add(entity1.position, velocity1);
     return Collision._isColliding(
       new_entity1_position,
       entity1.size,
@@ -54,6 +54,8 @@ class Collision {
       position1.y + size1.y / 2 > position2.y - size2.y / 2
     );
   }
+
+  beforeUpdate(_entity: Entity, _entities: Entity[]) {}
 }
 
 export default Collision;

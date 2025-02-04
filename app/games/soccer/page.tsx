@@ -49,7 +49,7 @@ export default function GamePage() {
         'blue'
       );
       entity.team = 'blue';
-      entity.beforeUpdate = (entity, _) => {
+      entity.beforeUpdate = (entity) => {
         const velocity = new Vector(
           (keys.current['d'] ? 1 : 0) - (keys.current['a'] ? 1 : 0),
           (keys.current['s'] ? 1 : 0) - (keys.current['w'] ? 1 : 0)
@@ -89,7 +89,7 @@ export default function GamePage() {
         entity.timeCount = 1;
         entity.timeLimit = 200 + Math.floor(Math.random() * 200);
       }
-      entity.timeCount += 1;
+      entity.timeCount = Number(entity.timeCount) + 1;
 
       let target = Vector.zero();
       const strategy = entity.strategy || 'attacking';
@@ -201,8 +201,8 @@ export default function GamePage() {
         '#fff'
       );
       entity.interval = 0;
-      entity.beforeUpdate = (entity, _) => {
-        entity.interval += 1;
+      entity.beforeUpdate = (entity) => {
+        entity.interval = Number(entity.interval) + 1;
         if (entity.interval >= 100) {
           if (Math.abs(entity.velocity.x) < BALL_SPEED_MAX) {
             entity.velocity = Vector.multiply(entity.velocity, 1.02);
@@ -376,7 +376,7 @@ export default function GamePage() {
     ),
   ]);
 
-  const playHit = () => playSound(523.25, 0.1);
+  // const playHit = () => playSound(523.25, 0.1);
   const playGoal = () => playSound(1046.5, 0.4);
 
   const resetGame = () => {

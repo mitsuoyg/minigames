@@ -22,7 +22,7 @@ class Vector {
   }
 
   static normalize(vector: Vector): Vector {
-    let magnitude = this.magnitude(vector);
+    const magnitude = this.magnitude(vector);
     return this.divide(vector, magnitude);
   }
 
