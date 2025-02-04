@@ -5,14 +5,11 @@ import { games } from './data/game';
 export default function Home() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 p-8 sm:p-12 md:p-16">
-      <header className="mb-16 text-center">
-        <h1 className="text-4xl font-bold text-white sm:text-5xl md:text-6xl bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
-          Next-Gen Gaming Hub
+      <div className="mb-10 text-center">
+        <h1 className="text-xl md:text-2xl text-slate-300">
+          Choose your mini game and start playing
         </h1>
-        <p className="mt-4 text-lg text-slate-300 md:text-xl">
-          Choose your immersive experience
-        </p>
-      </header>
+      </div>
 
       <div className="mx-auto grid max-w-3xl grid-cols-1 gap-8 sm:grid-cols-2">
         {games.map((game) => (
@@ -47,13 +44,6 @@ export default function Home() {
           </Link>
         ))}
       </div>
-
-      <footer className="mt-16 text-center">
-        <p className="text-slate-400">
-          Powered by{' '}
-          <span className="font-semibold text-cyan-400">Next.js Gaming</span>
-        </p>
-      </footer>
     </div>
   );
 }

@@ -28,20 +28,19 @@ export const games: Game[] = [
   },
   {
     id: 3,
-    name: 'AI Soccer',
-    description:
-      'Dynamic 1v1 soccer match against adaptive artificial intelligence. Master physics-based ball control and tactical gameplay.',
-    path: '/games/soccer',
-    image: '/games/soccer.jpg',
-    theme: 'bg-emerald-500/20',
-  },
-  {
-    id: 4,
     name: 'Snake',
     description:
       'Classic arcade experience with progressive difficulty scaling.',
     path: '/games/snake',
     image: '/games/snake.PNG',
     theme: 'bg-amber-500/20',
+  },
+  {
+    id: 4,
+    name: 'Soccer 2D',
+    description: 'Dynamic soccer match against AI players.',
+    path: '/games/soccer',
+    image: '/games/soccer.PNG',
+    theme: 'bg-emerald-500/20',
   },
 ];
