@@ -8,6 +8,7 @@ class Entity {
   color: string;
   velocity: Vector;
   listeners: { [key: string]: Function };
+  [key: string]: any;
 
   constructor(
     tag: string,

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState, useCallback, use } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useInterval } from 'react-use';
 import useGameSounds from '@/app/_hooks/useGameSounds';
 import Vector from './_components/Vector';
@@ -11,16 +11,14 @@ import Collision from './_components/modules/Collision';
 
 const FIELD_WIDTH = 1000;
 const GOAL_WIDTH = 50;
-const GOAL_ASPECT = 0.4;
+const GOAL_ASPECT = 0.3;
 const FIELD_HEIGHT = 600;
-const PLAYER_SIZE = 25;
+const PLAYER_SIZE = 20;
 const ITEM_WEIGHT = 10;
-const NUM_PLAYERS = 2;
-const BALL_SIZE = 15;
-const WALL_WIDTH = 20;
+const BALL_SIZE = 10;
 const WALL_COLOR = '#333';
-const PLAYER_SPEED = 5;
-const BALL_SPEED = 5;
+const PLAYER_SPEED = 3;
+const BALL_SPEED = 6;
 
 export default function GamePage() {
   const { playSound } = useGameSounds();
@@ -53,7 +51,89 @@ export default function GamePage() {
       return entity;
     })()
   );
-  const redPlayer = useRef<Entity>(
+  const AIPlayerFactory = (team: string, position: Vector) => {
+    const entity = new Entity(
+      `${team}-player`,
+      position,
+      new Vector(PLAYER_SIZE, PLAYER_SIZE),
+      [new Physics()],
+      team
+    );
+    entity.beforeUpdate = (entity) => {
+      if (!entity.timeCount || entity.timeCount > 300) {
+        const strategies = [
+          'attacking',
+          'attacking',
+          'attacking',
+          'defending',
+          'defending',
+          'goalkeeper',
+        ];
+        entity.strategy =
+          strategies[Math.floor(Math.random() * strategies.length)];
+        console.log(entity.strategy);
+        entity.timeCount = 0;
+      }
+      entity.timeCount += 1;
+
+      let strategy = entity.strategy || 'attacking';
+      let target = Vector.zero();
+      let myGoal = team === 'red' ? redGoal.current : blueGoal.current;
+
+      if (strategy === 'attacking') {
+        target = new Vector(ball.current.position.x, ball.current.position.y);
+      } else if (strategy === 'defending') {
+        target = new Vector(
+          (ball.current.position.x + myGoal.position.x) / 2,
+          ball.current.position.y
+        );
+      } else if (strategy === 'goalkeeper') {
+        const targetX =
+          team === 'red'
+            ? Math.max(ball.current.position.x, myGoal.position.x - 100)
+            : Math.min(ball.current.position.x, myGoal.position.x + 100);
+        target = new Vector(
+          targetX,
+          Math.max(Math.min(ball.current.position.y, 150), -150)
+        );
+      }
+      const directionVector = Vector.subtract(target, entity.position);
+      const direction = Vector.normalize(directionVector);
+      entity.velocity = Vector.multiply(direction, PLAYER_SPEED);
+    };
+    return entity;
+  };
+  const redPlayers = useRef<Entity[]>(
+    (() => {
+      const originX = FIELD_WIDTH / 4;
+      const positions = [
+        new Vector(originX, 0),
+        new Vector(originX, 20),
+        new Vector(originX, -20),
+        new Vector(originX - 20, 0),
+      ];
+      const entities = positions.map((position) =>
+        AIPlayerFactory('red', position)
+      );
+      return entities;
+    })()
+  );
+  const bluePlayers = useRef<Entity[]>(
+    (() => {
+      const originX = -FIELD_WIDTH / 4;
+      const positions = [
+        new Vector(originX, 20),
+        new Vector(originX, -20),
+        new Vector(originX + 20, 0),
+      ];
+      const entities = positions.map((position) =>
+        AIPlayerFactory('blue', position)
+      );
+      return entities;
+    })()
+  );
+
+  const redPlayer_ = useRef<Entity>(
     (() => {
       const entity = new Entity(
         'redPlayer',
@@ -135,7 +215,8 @@ export default function GamePage() {
 
   const entities = useRef<Entity[]>([
     player.current,
-    redPlayer.current,
+    ...redPlayers.current,
+    ...bluePlayers.current,
     ball.current,
     redGoal.current,
     blueGoal.current,
@@ -250,11 +331,10 @@ export default function GamePage() {
   ]);
 
   const playHit = () => playSound(523.25, 0.1);
-  const playGoal = () => playSound(1046.5, 0.5);
+  const playGoal = () => playSound(1046.5, 0.4);
 
   const resetGame = () => {
     player.current.position = new Vector(-FIELD_WIDTH / 4, 0);
-    redPlayer.current.position = new Vector(FIELD_WIDTH / 4, 0);
     ball.current.position = new Vector(50, 0);
     ball.current.velocity = new Vector(BALL_SPEED, BALL_SPEED);
   };
