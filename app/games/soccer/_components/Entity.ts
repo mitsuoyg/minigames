@@ -14,14 +14,8 @@ class Entity {
   color: string;
   velocity: Vector;
   listeners: { [key: string]: ListenerFunction };
-  [key: string]:
-    | undefined
-    | number
-    | string
-    | Vector
-    | Function
-    | Component[]
-    | { [key: string]: ListenerFunction };
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
+  [key: string]: any;
 
   constructor(
     tag: string,
