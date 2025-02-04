@@ -259,7 +259,10 @@ export default function GamePage() {
     ball.current.velocity = new Vector(BALL_SPEED, BALL_SPEED);
   };
 
-  const resetAll = () => {};
+  const resetAll = () => {
+    setScores({ blue: 0, red: 0 });
+    resetGame();
+  };
 
   useEffect(() => {
     const handleKeyEvent = (e: KeyboardEvent, isPressed: boolean) => {
@@ -278,6 +281,8 @@ export default function GamePage() {
   }, []);
 
   const gameLoop = () => {
+    if (isPaused) return;
+
     const draw = () => {
       if (!canvasRef.current) return;
       const ctx = canvasRef.current.getContext('2d');
@@ -332,10 +337,7 @@ export default function GamePage() {
           {isPaused ? 'Resume (P)' : 'Pause (P)'}
         </button>
         <button
-          onClick={() => {
-            resetAll();
-            setScores({ blue: 0, red: 0 });
-          }}
+          onClick={() => resetAll()}
           className="bg-gray-800 px-4 py-2 rounded hover:bg-gray-700"
         >
           Restart (R)
