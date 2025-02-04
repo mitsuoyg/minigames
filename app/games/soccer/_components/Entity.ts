@@ -4,6 +4,8 @@ import Vector from './Vector';
 
 type Component = Physics | Collision;
 
+type ListenerFunction = (entity: Entity) => void;
+
 class Entity {
   tag: string;
   position: Vector;
@@ -11,7 +13,7 @@ class Entity {
   components: Component[];
   color: string;
   velocity: Vector;
-  listeners: { [key: string]: Function };
+  listeners: { [key: string]: ListenerFunction };
   [key: string]:
     | undefined
     | number
@@ -19,7 +21,7 @@ class Entity {
     | Vector
     | Function
     | Component[]
-    | { [key: string]: Function };
+    | { [key: string]: ListenerFunction };
 
   constructor(
     tag: string,
@@ -47,7 +49,7 @@ class Entity {
     ) as T | undefined;
   }
 
-  on(listener: string, callback: Function) {
+  on(listener: string, callback: ListenerFunction) {
     this.listeners[listener] = callback;
   }
 
