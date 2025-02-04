@@ -37,6 +37,7 @@ class Entity {
     this.components.push(component);
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   getComponent<T>(componentClass: new (...args: any[]) => T): T | undefined {
     return this.components.find(
       (component) => component instanceof componentClass
