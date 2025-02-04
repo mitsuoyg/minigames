@@ -65,7 +65,8 @@ class Physics {
     }
   }
 
-  beforeUpdate(_entity: Entity, _entities: Entity[]) {}
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  beforeUpdate(entity: Entity, entities: Entity[]) {}
 }
 
 export default Physics;

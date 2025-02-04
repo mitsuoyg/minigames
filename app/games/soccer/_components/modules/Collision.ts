@@ -54,8 +54,8 @@ class Collision {
       position1.y + size1.y / 2 > position2.y - size2.y / 2
     );
   }
-
-  beforeUpdate(_entity: Entity, _entities: Entity[]) {}
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  beforeUpdate(entity: Entity, entities: Entity[]) {}
 }
 
 export default Collision;

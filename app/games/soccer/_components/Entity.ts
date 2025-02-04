@@ -2,11 +2,13 @@ import Collision from './modules/Collision';
 import Physics from './modules/Physics';
 import Vector from './Vector';
 
+type Component = Physics | Collision;
+
 class Entity {
   tag: string;
   position: Vector;
   size: Vector;
-  components: (Physics | Collision)[];
+  components: Component[];
   color: string;
   velocity: Vector;
   listeners: { [key: string]: Function };
@@ -16,14 +18,14 @@ class Entity {
     | string
     | Vector
     | Function
-    | (Physics | Collision)[]
+    | Component[]
     | { [key: string]: Function };
 
   constructor(
     tag: string,
     position: Vector,
     size: Vector,
-    components: any[] = [],
+    components: Component[] = [],
     color: string = '#000'
   ) {
     this.tag = tag;
@@ -35,7 +37,7 @@ class Entity {
     this.listeners = {};
   }
 
-  addComponent(component: any) {
+  addComponent(component: Component) {
     this.components.push(component);
   }
 
@@ -79,8 +81,12 @@ class Entity {
     });
     this.position.add(this.velocity);
   }
-  update(_entity: Entity, _entities: Entity[]) {}
-  beforeUpdate(_entity: Entity, _entities: Entity[]) {}
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  update(entity: Entity, entities: Entity[]) {}
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  beforeUpdate(entity: Entity, entities: Entity[]) {}
 }
 
 export default Entity;
