@@ -14,7 +14,7 @@ class Entity {
   color: string;
   velocity: Vector;
   listeners: { [key: string]: ListenerFunction };
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key: string]: any;
 
   constructor(
