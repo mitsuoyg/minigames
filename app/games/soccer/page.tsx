@@ -6,14 +6,21 @@ import useGameSounds from '@/app/_hooks/useGameSounds';
 import Vector from './_components/Vector';
 import Camera from './_components/Camera';
 import Entity from './_components/Entity';
+import Physics from './_components/modules/Physics';
+import Collision from './_components/modules/Collision';
 
 const FIELD_WIDTH = 1000;
+const GOAL_WIDTH = 50;
+const GOAL_ASPECT = 0.4;
 const FIELD_HEIGHT = 600;
-const PLAYER_SIZE = 20;
+const PLAYER_SIZE = 25;
+const ITEM_WEIGHT = 10;
 const NUM_PLAYERS = 2;
 const BALL_SIZE = 15;
-const GOAL_WIDTH = 100;
 const WALL_WIDTH = 20;
+const WALL_COLOR = '#333';
+const PLAYER_SPEED = 5;
+const BALL_SPEED = 5;
 
 export default function GamePage() {
   const { playSound } = useGameSounds();
@@ -26,40 +33,209 @@ export default function GamePage() {
   );
   const player = useRef<Entity>(
     (() => {
-      const entity = new Entity('player', Vector.zero(), new Vector(40, 40));
-      const speed = 8;
+      const entity = new Entity(
+        'player',
+        Vector.zero(),
+        new Vector(PLAYER_SIZE, PLAYER_SIZE),
+        [new Physics()]
+      );
       entity.beforeUpdate = (entity, _) => {
-        let velocity = Vector.zero();
-        if (keys.current['a']) {
-          velocity.x = -1;
-        }
-        if (keys.current['d']) {
-          velocity.x = 1;
-        }
-        if (keys.current['w']) {
-          velocity.y = -1;
-        }
-        if (keys.current['s']) {
-          velocity.y = 1;
-        }
-        let normalized = Vector.normalize(velocity);
-        entity.velocity = Vector.multiply(normalized, speed);
+        const velocity = new Vector(
+          (keys.current['d'] ? 1 : 0) - (keys.current['a'] ? 1 : 0),
+          (keys.current['s'] ? 1 : 0) - (keys.current['w'] ? 1 : 0)
+        );
+        entity.velocity = Vector.multiply(
+          Vector.normalize(velocity),
+          PLAYER_SPEED
+        );
+      };
+      entity.listeners.collision = (other_entity: Entity) => {
+        console.log(other_entity.tag);
       };
       return entity;
     })()
   );
-  const entities = useRef<Entity[]>([player.current]);
+  const ball = useRef<Entity>(
+    (() => {
+      const entity = new Entity(
+        'ball',
+        new Vector(50, 0),
+        new Vector(BALL_SIZE, BALL_SIZE),
+        [new Physics('bounce')],
+        '#fff'
+      );
+      entity.velocity = new Vector(BALL_SPEED, BALL_SPEED);
+      return entity;
+    })()
+  );
+  const redGoal = useRef<Entity>(
+    (() => {
+      const entity = new Entity(
+        'wall',
+        new Vector(-FIELD_WIDTH / 2 - GOAL_WIDTH, 0),
+        new Vector(ITEM_WEIGHT, FIELD_HEIGHT * GOAL_ASPECT + ITEM_WEIGHT),
+        [new Collision()],
+        'red'
+      );
+      entity.on('collision', (other_entity: Entity) => {
+        if (other_entity.tag === 'ball') {
+          playGoal();
+          setScores({ ...scores, red: scores.red + 1 });
+          resetGame();
+        }
+      });
+      return entity;
+    })()
+  );
+  const blueGoal = useRef<Entity>(
+    (() => {
+      const entity = new Entity(
+        'wall',
+        new Vector(FIELD_WIDTH / 2 + GOAL_WIDTH, 0),
+        new Vector(ITEM_WEIGHT, FIELD_HEIGHT * GOAL_ASPECT + ITEM_WEIGHT),
+        [new Collision()],
+        'blue'
+      );
+      entity.on('collision', (other_entity: Entity) => {
+        if (other_entity.tag === 'ball') {
+          playGoal();
+          setScores({ ...scores, blue: scores.blue + 1 });
+          resetGame();
+        }
+      });
+      return entity;
+    })()
+  );
+
+  const entities = useRef<Entity[]>([
+    player.current,
+    ball.current,
+    redGoal.current,
+    blueGoal.current,
+    new Entity(
+      'wall',
+      new Vector(0, FIELD_HEIGHT / 2),
+      new Vector(FIELD_WIDTH, ITEM_WEIGHT),
+      [new Physics('static')],
+      WALL_COLOR
+    ),
+    new Entity(
+      'wall',
+      new Vector(0, -FIELD_HEIGHT / 2),
+      new Vector(FIELD_WIDTH, ITEM_WEIGHT),
+      [new Physics('static')],
+      WALL_COLOR
+    ),
+    new Entity(
+      'wall',
+      new Vector(
+        -FIELD_WIDTH / 2,
+        FIELD_HEIGHT / 2 - (FIELD_HEIGHT - FIELD_HEIGHT * GOAL_ASPECT) / 4
+      ),
+      new Vector(
+        ITEM_WEIGHT,
+        (FIELD_HEIGHT - FIELD_HEIGHT * GOAL_ASPECT) / 2 + ITEM_WEIGHT
+      ),
+      [new Physics('static')],
+      WALL_COLOR
+    ),
+    // Left
+    new Entity(
+      'wall',
+      new Vector(
+        -FIELD_WIDTH / 2 - GOAL_WIDTH / 2,
+        (-FIELD_HEIGHT * GOAL_ASPECT) / 2
+      ),
+      new Vector(GOAL_WIDTH, ITEM_WEIGHT),
+      [new Physics('static')],
+      WALL_COLOR
+    ),
+    new Entity(
+      'wall',
+      new Vector(
+        -FIELD_WIDTH / 2 - GOAL_WIDTH / 2,
+        (FIELD_HEIGHT * GOAL_ASPECT) / 2
+      ),
+      new Vector(GOAL_WIDTH, ITEM_WEIGHT),
+      [new Physics('static')],
+      WALL_COLOR
+    ),
+    new Entity(
+      'wall',
+      new Vector(
+        -FIELD_WIDTH / 2,
+        -FIELD_HEIGHT / 2 + (FIELD_HEIGHT - FIELD_HEIGHT * GOAL_ASPECT) / 4
+      ),
+      new Vector(
+        ITEM_WEIGHT,
+        (FIELD_HEIGHT - FIELD_HEIGHT * GOAL_ASPECT) / 2 + ITEM_WEIGHT
+      ),
+      [new Physics('static')],
+      WALL_COLOR
+    ),
+    // Right
+    new Entity(
+      'wall',
+      new Vector(
+        FIELD_WIDTH / 2,
+        FIELD_HEIGHT / 2 - (FIELD_HEIGHT - FIELD_HEIGHT * GOAL_ASPECT) / 4
+      ),
+      new Vector(
+        ITEM_WEIGHT,
+        (FIELD_HEIGHT - FIELD_HEIGHT * GOAL_ASPECT) / 2 + ITEM_WEIGHT
+      ),
+      [new Physics('static')],
+      WALL_COLOR
+    ),
+    new Entity(
+      'wall',
+      new Vector(
+        FIELD_WIDTH / 2 + GOAL_WIDTH / 2,
+        (-FIELD_HEIGHT * GOAL_ASPECT) / 2
+      ),
+      new Vector(GOAL_WIDTH, ITEM_WEIGHT),
+      [new Physics('static')],
+      WALL_COLOR
+    ),
+    new Entity(
+      'wall',
+      new Vector(
+        FIELD_WIDTH / 2 + GOAL_WIDTH / 2,
+        (FIELD_HEIGHT * GOAL_ASPECT) / 2
+      ),
+      new Vector(GOAL_WIDTH, ITEM_WEIGHT),
+      [new Physics('static')],
+      WALL_COLOR
+    ),
+    new Entity(
+      'wall',
+      new Vector(
+        FIELD_WIDTH / 2,
+        -FIELD_HEIGHT / 2 + (FIELD_HEIGHT - FIELD_HEIGHT * GOAL_ASPECT) / 4
+      ),
+      new Vector(
+        ITEM_WEIGHT,
+        (FIELD_HEIGHT - FIELD_HEIGHT * GOAL_ASPECT) / 2 + ITEM_WEIGHT
+      ),
+      [new Physics('static')],
+      WALL_COLOR
+    ),
+  ]);
 
   const playHit = () => playSound(523.25, 0.1);
   const playGoal = () => playSound(1046.5, 0.5);
+
+  const resetGame = () => {
+    player.current.position = Vector.zero();
+    ball.current.position = new Vector(50, 0);
+    ball.current.velocity = new Vector(BALL_SPEED, BALL_SPEED);
+  };
 
   const resetAll = () => {};
 
   useEffect(() => {
     const handleKeyEvent = (e: KeyboardEvent, isPressed: boolean) => {
-      if (['w', 's', 'a', 'd'].includes(e.key)) {
-        keys.current = { ...keys.current, [e.key]: isPressed };
-      }
+      keys.current = { ...keys.current, [e.key]: isPressed };
     };
 
     const keyDownHandler = (e: KeyboardEvent) => handleKeyEvent(e, true);
@@ -79,8 +255,8 @@ export default function GamePage() {
       const ctx = canvasRef.current.getContext('2d');
       if (!ctx) return;
 
-      canvasRef.current.width = camera.current.size.x;
-      canvasRef.current.height = camera.current.size.y;
+      canvasRef.current.width = camera.current.size.x + 200;
+      canvasRef.current.height = camera.current.size.y + 200;
       ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
 
       entities.current.forEach((entity) => {
