@@ -35,14 +35,39 @@ export default function GamePage() {
     (() => {
       const entity = new Entity(
         'player',
-        Vector.zero(),
+        new Vector(-FIELD_WIDTH / 4, 0),
         new Vector(PLAYER_SIZE, PLAYER_SIZE),
-        [new Physics()]
+        [new Physics()],
+        'blue'
       );
       entity.beforeUpdate = (entity, _) => {
         const velocity = new Vector(
           (keys.current['d'] ? 1 : 0) - (keys.current['a'] ? 1 : 0),
           (keys.current['s'] ? 1 : 0) - (keys.current['w'] ? 1 : 0)
+        );
+        entity.velocity = Vector.multiply(
+          Vector.normalize(velocity),
+          PLAYER_SPEED
+        );
+      };
+      return entity;
+    })()
+  );
+  const redPlayer = useRef<Entity>(
+    (() => {
+      const entity = new Entity(
+        'redPlayer',
+        new Vector(FIELD_WIDTH / 4, 0),
+        new Vector(PLAYER_SIZE, PLAYER_SIZE),
+        [new Physics()],
+        'red'
+      );
+      entity.beforeUpdate = (entity, _) => {
+        const velocity = new Vector(
+          (keys.current['ArrowRight'] ? 1 : 0) -
+            (keys.current['ArrowLeft'] ? 1 : 0),
+          (keys.current['ArrowDown'] ? 1 : 0) -
+            (keys.current['ArrowUp'] ? 1 : 0)
         );
         entity.velocity = Vector.multiply(
           Vector.normalize(velocity),
@@ -55,6 +80,7 @@ export default function GamePage() {
       return entity;
     })()
   );
+
   const ball = useRef<Entity>(
     (() => {
       const entity = new Entity(
@@ -68,30 +94,11 @@ export default function GamePage() {
       return entity;
     })()
   );
-  const redGoal = useRef<Entity>(
-    (() => {
-      const entity = new Entity(
-        'wall',
-        new Vector(-FIELD_WIDTH / 2 - GOAL_WIDTH, 0),
-        new Vector(ITEM_WEIGHT, FIELD_HEIGHT * GOAL_ASPECT + ITEM_WEIGHT),
-        [new Collision()],
-        'red'
-      );
-      entity.on('collision', (other_entity: Entity) => {
-        if (other_entity.tag === 'ball') {
-          playGoal();
-          setScores({ ...scores, red: scores.red + 1 });
-          resetGame();
-        }
-      });
-      return entity;
-    })()
-  );
   const blueGoal = useRef<Entity>(
     (() => {
       const entity = new Entity(
         'wall',
-        new Vector(FIELD_WIDTH / 2 + GOAL_WIDTH, 0),
+        new Vector(-FIELD_WIDTH / 2 - GOAL_WIDTH, 0),
         new Vector(ITEM_WEIGHT, FIELD_HEIGHT * GOAL_ASPECT + ITEM_WEIGHT),
         [new Collision()],
         'blue'
@@ -99,7 +106,26 @@ export default function GamePage() {
       entity.on('collision', (other_entity: Entity) => {
         if (other_entity.tag === 'ball') {
           playGoal();
-          setScores({ ...scores, blue: scores.blue + 1 });
+          setScores((prev) => ({ ...prev, red: prev.red + 1 }));
+          resetGame();
+        }
+      });
+      return entity;
+    })()
+  );
+  const redGoal = useRef<Entity>(
+    (() => {
+      const entity = new Entity(
+        'wall',
+        new Vector(FIELD_WIDTH / 2 + GOAL_WIDTH, 0),
+        new Vector(ITEM_WEIGHT, FIELD_HEIGHT * GOAL_ASPECT + ITEM_WEIGHT),
+        [new Collision()],
+        'red'
+      );
+      entity.on('collision', (other_entity: Entity) => {
+        if (other_entity.tag === 'ball') {
+          playGoal();
+          setScores((prev) => ({ ...prev, blue: prev.blue + 1 }));
           resetGame();
         }
       });
@@ -109,6 +135,7 @@ export default function GamePage() {
 
   const entities = useRef<Entity[]>([
     player.current,
+    redPlayer.current,
     ball.current,
     redGoal.current,
     blueGoal.current,
@@ -226,7 +253,8 @@ export default function GamePage() {
   const playGoal = () => playSound(1046.5, 0.5);
 
   const resetGame = () => {
-    player.current.position = Vector.zero();
+    player.current.position = new Vector(-FIELD_WIDTH / 4, 0);
+    redPlayer.current.position = new Vector(FIELD_WIDTH / 4, 0);
     ball.current.position = new Vector(50, 0);
     ball.current.velocity = new Vector(BALL_SPEED, BALL_SPEED);
   };
